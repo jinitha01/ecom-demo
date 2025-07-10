@@ -16,6 +16,7 @@ env/
 
 # Database
 *.sqlite3
+migrations/
 
 # Media files (user-uploaded content)
 media/
