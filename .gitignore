@@ -35,6 +35,7 @@ local_settings.py
 .coverage
 htmlcov/
 .pytest_cache/
+test_debug/
 
 # Other temporary files
 tmp/
