@@ -1,50 +1,23 @@
-# .github/workflows/django_ci.yml
-
 name: Django CI
 
 on:
   push:
-    branches:
-      - main
-      
+    branches: [ main ]
   pull_request:
-    branches:
-      - main
+    branches: [ main ]
+
+env:
+  DJANGO_SETTINGS_MODULE: ecom_demo.settings
+  PYTHONUNBUFFERED: 1
 
 jobs:
   build_unit_tests:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+    - uses: actions/checkout@v4
 
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.12'
-
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt 
-    - name: Run Django migrations
-      run: python manage.py migrate
-      working-directory: ./
-
-    - name: Run Unit Tests
-      run: pytest 
-      working-directory: ./
-
-  e2e_tests:
-    needs: build_unit_tests 
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Set up Python
+    - name: Set up Python 3.12
       uses: actions/setup-python@v5
       with:
         python-version: '3.12'
@@ -53,33 +26,65 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-        # Install Chromium for Selenium
-        sudo apt-get update
-        sudo apt-get install -y chromium-browser
+        pip install pytest pytest-django
 
-    - name: Run Django migrations
+    - name: Run migrations
       run: python manage.py migrate
-      working-directory: ./
 
-    - name: Start Django development server
-      run: |
-        nohup python manage.py runserver 0.0.0.0:8000 & # Start server in background
-        echo $! > server.pid # Save process ID
-      working-directory: ./
+    - name: Run unit tests
+      run: pytest
+      env:
+        SECRET_KEY: ${{ secrets.SECRET_KEY }}
+        DEBUG: 'False'
+        ALLOWED_HOSTS: 'localhost,127.0.0.1'
 
-    - name: Run End-to-End Tests (Selenium)
-      run: |
-          cd ecom_demo
-          pytest e2e_tests/
-    - name: Stop Django development server
-      if: always()
-      run: kill $(cat server.pid)
-      working-directory: ./
+  e2e_tests:
+    needs: build_unit_tests
+    runs-on: ubuntu-latest
 
-    - name: Upload Failed Test Screenshots
-      uses: actions/upload-artifact@v4
-      if: failure()
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python 3.12
+      uses: actions/setup-python@v5
       with:
-        name: e2e-failed-screenshots-${{ github.run_id }}
-        path: ./test_debug/
+        python-version: '3.12'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install selenium pytest-selenium
+        sudo apt-get update
+        sudo apt-get install -y chromium-browser chromium-chromedriver
+
+    - name: Run migrations
+      run: python manage.py migrate
+
+    - name: Start Django server
+      run: |
+        python manage.py runserver 0.0.0.0:8000 &> server.log &
+        echo $! > server.pid
+        sleep 5  # Give server time to start
+        cat server.log
+      env:
+        SECRET_KEY: ${{ secrets.SECRET_KEY }}
+        DEBUG: 'True'
+        ALLOWED_HOSTS: 'localhost,127.0.0.1,0.0.0.0'
+
+    - name: Run E2E tests
+      run: |
+        cd ecom_demo
+        pytest e2e_tests/ -v
+
+    - name: Stop Django server
+      if: always()
+      run: kill $(cat server.pid) || true
+
+    - name: Upload server logs
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: server-logs
+        path: server.log
         retention-days: 5
