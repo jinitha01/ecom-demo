@@ -67,16 +67,6 @@ jobs:
         echo $! > server.pid # Save process ID
       working-directory: ./
 
-    - name: Wait for Django server to be ready
-      run: |
-        LOCAL_IP=$(hostname -I | awk '{print $1}')
-        for i in $(seq 1 10); do
-          curl -f http://$LOCAL_IP:8000/ && break
-          echo "Waiting for Django server... ($i/10)"
-          sleep 5
-        done
-      working-directory: ./
-
     - name: Run End-to-End Tests (Selenium)
       run: |
           cd ecom_demo
