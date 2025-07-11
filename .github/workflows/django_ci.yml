@@ -12,7 +12,7 @@ on:
       - main
 
 jobs:
-  build:
+  build_unit_tests:
     runs-on: ubuntu-latest
 
     steps:
@@ -37,7 +37,7 @@ jobs:
       working-directory: ./
 
   e2e_tests:
-    needs: build 
+    needs: build_unit_tests 
     runs-on: ubuntu-latest
 
     steps:
@@ -83,3 +83,11 @@ jobs:
       if: always()
       run: kill $(cat server.pid)
       working-directory: ./
+
+    - name: Upload Failed Test Screenshots
+      uses: actions/upload-artifact@v4
+      if: failure()
+      with:
+        name: e2e-failed-screenshots-${{ github.run_id }}
+        path: ./test_debug/
+        retention-days: 5
