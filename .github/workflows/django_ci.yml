@@ -77,8 +77,9 @@ jobs:
       working-directory: ./
 
     - name: Run End-to-End Tests (Selenium)
-      run: pytest e2e_tests/
-      working-directory: ./
+      run: |
+          cd ecom_demo
+          pytest e2e_tests/
     - name: Stop Django development server
       if: always()
       run: kill $(cat server.pid)
