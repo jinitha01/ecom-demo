@@ -1,0 +1,35 @@
+<!-- products/templates/products/product_list.html -->
+{% extends 'products/base.html' %}
+
+{% block title %}Products - Fablisse E-commerce{% endblock %}
+
+{% block content %}
+<h2 class="text-3xl font-bold mb-6 text-center text-gray-800">Our Products</h2>
+
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+    {% for product in products %}
+    <div class="bg-white rounded-lg shadow-lg overflow-hidden transform transition duration-300 hover:scale-105 hover:shadow-xl">
+        <a href="{% url 'product_detail' product.pk %}">
+            <img src="{{ product.image_url|default:'https://placehold.co/400x300/E0E7FF/3B82F6?text=No+Image' }}" alt="{{ product.name }}" class="w-full h-48 object-cover">
+        </a>
+        <div class="p-4">
+            <h3 class="text-xl font-semibold text-gray-900 mb-2 truncate">
+                <a href="{% url 'product_detail' product.pk %}" class="hover:text-purple-600">{{ product.name }}</a>
+            </h3>
+            <p class="text-gray-600 mb-3 line-clamp-2">{{ product.description }}</p>
+            <div class="flex justify-between items-center">
+                <span class="text-2xl font-bold text-purple-600">${{ product.price }}</span>
+                <form action="{% url 'add_to_cart' product.pk %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="bg-purple-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-full transition duration-300 ease-in-out shadow-md hover:shadow-lg">
+                        Add to Cart
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <p class="col-span-full text-center text-gray-600 text-lg">No products available yet.</p>
+    {% endfor %}
+</div>
+{% endblock %}

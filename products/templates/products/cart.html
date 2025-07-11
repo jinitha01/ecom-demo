@@ -1,0 +1,162 @@
+{% extends 'products/base.html' %}
+
+{% block title %}Your Cart - Fablisse E-commerce{% endblock %}
+
+{% block content %}
+<h2 class="text-3xl font-bold mb-6 text-center text-gray-800">Your Shopping Cart</h2>
+
+{% if cart_items %}
+<div class="bg-white rounded-lg shadow-lg p-6 md:p-8">
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200" id="cart-table">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subtotal</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for item in cart_items %}
+                <tr id="cart-item-{{ item.product_id }}">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 h-16 w-16">
+                                <img class="h-16 w-16 rounded-lg object-cover" src="{{ item.image_url|default:'https://placehold.co/64x64/E0E7FF/3B82F6?text=No+Image' }}" alt="{{ item.name }}">
+                            </div>
+                            <div class="ml-4">
+                                <div class="text-sm font-medium text-gray-900">{{ item.name }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${{ item.price|floatformat:2 }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <div class="flex items-center space-x-2">
+                            <button class="decrease-quantity-btn bg-gray-200 text-gray-700 px-2 py-1 rounded-md hover:bg-gray-300 transition duration-150" data-product-id="{{ item.product_id }}">-</button>
+                            <span class="quantity-display font-semibold" data-product-id="{{ item.product_id }}">{{ item.quantity }}</span>
+                            <button class="increase-quantity-btn bg-gray-200 text-gray-700 px-2 py-1 rounded-md hover:bg-gray-300 transition duration-150" data-product-id="{{ item.product_id }}">+</button>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-semibold subtotal-display" data-product-id="{{ item.product_id }}">${{ item.subtotal|floatformat:2 }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <button class="remove-item-btn text-red-600 hover:text-red-900 transition duration-150" data-product-id="{{ item.product_id }}">Remove</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="mt-8 flex justify-end items-center border-t pt-6">
+        <div class="text-right">
+            <p class="text-2xl font-bold text-gray-900">Total: <span class="text-blue-600" id="total-price-display">${{ total_price|floatformat:2 }}</span></p>
+            <button class="mt-4 bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg text-lg transition duration-300 ease-in-out shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
+                Proceed to Checkout (Not Implemented)
+            </button>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="bg-white rounded-lg shadow-lg p-8 text-center" id="empty-cart-message">
+    <p class="text-xl text-gray-600 mb-4">Your cart is empty.</p>
+    <a href="{% url 'product_list' %}" class="inline-block bg-purple-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg transition duration-300 ease-in-out shadow-md hover:shadow-lg">
+        Start Shopping
+    </a>
+</div>
+{% endif %}
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+    // CSRF Token function
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    const csrftoken = getCookie('csrftoken');
+
+    // Update UI function
+    function updateCartUI(data, productId) {
+        console.log('Updating UI with:', data);
+        if (data.status !== 'success') {
+            console.error('Error:', data.message);
+            return;
+        }
+
+        // Update total price
+        const totalDisplay = document.getElementById('total-price-display');
+        if (totalDisplay) totalDisplay.textContent = `$${data.total_price.toFixed(2)}`;
+
+       
+        if (data.new_quantity !== undefined) {
+            if (data.new_quantity > 0) {
+                document.querySelector(`.quantity-display[data-product-id="${productId}"]`).textContent = data.new_quantity;
+                document.querySelector(`.subtotal-display[data-product-id="${productId}"]`).textContent = `$${data.new_subtotal.toFixed(2)}`;
+            } else {
+                document.getElementById(`cart-item-${productId}`)?.remove();
+            }
+        } else {
+            document.getElementById(`cart-item-${productId}`)?.remove();
+        }
+
+        const cartTable = document.getElementById('cart-table');
+        const emptyCartMessage = document.getElementById('empty-cart-message');
+        if (cartTable && cartTable.querySelector('tbody').children.length === 0) {
+            cartTable.style.display = 'none';
+            if (emptyCartMessage) emptyCartMessage.style.display = 'block';
+        }
+    }
+
+    document.addEventListener('click', function(e) {
+        const productId = e.target.dataset.productId;
+        if (!productId) return;
+
+        if (e.target.classList.contains('increase-quantity-btn')) {
+            updateQuantity(productId, 'increase');
+        } else if (e.target.classList.contains('decrease-quantity-btn')) {
+            updateQuantity(productId, 'decrease');
+        } else if (e.target.classList.contains('remove-item-btn')) {
+            removeItem(productId);
+        }
+    });
+
+    function updateQuantity(productId, action) {
+        fetch(`/update_cart_quantity/${productId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': csrftoken
+            },
+            body: `action=${action}`
+        })
+        .then(response => response.json())
+        .then(data => updateCartUI(data, productId))
+        .catch(error => console.error('Error:', error));
+    }
+
+    function removeItem(productId) {
+        fetch(`/remove_from_cart/${productId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': csrftoken
+            }
+        })
+        .then(response => response.json())
+        .then(data => updateCartUI(data, productId))
+        .catch(error => console.error('Error:', error));
+    }
+});
+</script>
+{% endblock %}
