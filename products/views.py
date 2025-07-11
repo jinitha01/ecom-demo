@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Product, CartItem # CartItem is used for type hinting/structure, actual cart is session-based
+from .models import Product, CartItem 
 from django.http import JsonResponse
 from .models import Product
 
