@@ -77,10 +77,10 @@ jobs:
       if: always()
       run: kill $(cat server.pid) || true
 
-    - name: Upload server logs
-      if: always()
+    - name: Upload Failed Test Screenshots
       uses: actions/upload-artifact@v4
+      if: failure()
       with:
-        name: server-logs
-        path: server.log
+        name: e2e-failed-screenshots-${{ github.run_id }}
+        path: ./test_debug/
         retention-days: 5
