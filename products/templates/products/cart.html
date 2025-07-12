@@ -31,7 +31,7 @@
                             </div>
                         </div>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${{ item.price|floatformat:2 }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">¥{{ item.price|floatformat:2 }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         <div class="flex items-center space-x-2">
                             <button class="decrease-quantity-btn bg-gray-200 text-gray-700 px-2 py-1 rounded-md hover:bg-gray-300 transition duration-150" data-product-id="{{ item.product_id }}">-</button>
@@ -39,7 +39,7 @@
                             <button class="increase-quantity-btn bg-gray-200 text-gray-700 px-2 py-1 rounded-md hover:bg-gray-300 transition duration-150" data-product-id="{{ item.product_id }}">+</button>
                         </div>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-semibold subtotal-display" data-product-id="{{ item.product_id }}">${{ item.subtotal|floatformat:2 }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-semibold subtotal-display" data-product-id="{{ item.product_id }}">¥{{ item.subtotal|floatformat:2 }}</td>
                     <td class="px-6 py-4 whitespace-nowrap  text-sm font-medium">
                         <button class="remove-item-btn text-red-600 hover:text-red-900 transition duration-150" data-product-id="{{ item.product_id }}">Remove</button>
                     </td>
@@ -51,7 +51,7 @@
 
     <div class="mt-8 flex justify-end items-center border-t pt-6">
         <div class="text-right">
-            <p class="text-2xl font-bold text-gray-900">Total: <span class="text-blue-600" id="total-price-display">${{ total_price|floatformat:2 }}</span></p>
+            <p class="text-2xl font-bold text-gray-900">Total: <span class="text-blue-600" id="total-price-display">¥{{ total_price|floatformat:2 }}</span></p>
             <button class="mt-4 bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg text-lg transition duration-300 ease-in-out shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
                 Proceed to Checkout (Not Implemented)
             </button>
@@ -96,13 +96,13 @@
 
         // Update total price
         const totalDisplay = document.getElementById('total-price-display');
-        if (totalDisplay) totalDisplay.textContent = `$${data.total_price.toFixed(2)}`;
+        if (totalDisplay) totalDisplay.textContent = `¥${data.total_price.toFixed(2)}`;
 
        
         if (data.new_quantity !== undefined) {
             if (data.new_quantity > 0) {
                 document.querySelector(`.quantity-display[data-product-id="${productId}"]`).textContent = data.new_quantity;
-                document.querySelector(`.subtotal-display[data-product-id="${productId}"]`).textContent = `$${data.new_subtotal.toFixed(2)}`;
+                document.querySelector(`.subtotal-display[data-product-id="${productId}"]`).textContent = `¥${data.new_subtotal.toFixed(2)}`;
             } else {
                 document.getElementById(`cart-item-${productId}`)?.remove();
             }
