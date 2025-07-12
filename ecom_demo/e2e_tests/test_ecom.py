@@ -96,33 +96,72 @@ class EcommerceE2ETest(StaticLiveServerTestCase):
             self.debug_page("test_product_listing_failed")
             raise
 
-    def test_add_to_cart(self):
-        """Test adding a product to the cart"""
+    def test_add_to_cart_from_product_list(self):
+        """Test adding a product to cart from the product list page"""
         try:
-            add_buttons = WebDriverWait(self.selenium, 10).until(
-                EC.presence_of_all_elements_located(
-                    (By.CSS_SELECTOR, ".add-to-cart, [class*='add'], [class*='cart'], button, a.btn")
-                )
-            )
-            
-            for button in add_buttons:
-                if "add" in button.text.lower() or "cart" in button.text.lower():
-                    button.click()
-                    break
-            else:
-                add_buttons[0].click()
+            self.selenium.get(self.live_server_url + reverse('product_list'))
             
             WebDriverWait(self.selenium, 10).until(
-                lambda driver: "cart" in driver.current_url.lower() or 
-                EC.presence_of_element_located((By.CSS_SELECTOR, ".cart-item, [class*='cart'], [id*='cart']"))
+                EC.presence_of_element_located((By.CSS_SELECTOR, ".add-to-cart-button"))
             )
             
+            add_buttons = self.selenium.find_elements(By.CSS_SELECTOR, ".add-to-cart-button")
+            self.assertGreater(len(add_buttons), 0, "No add to cart buttons found")
+            
+            product_name = self.selenium.find_element(By.CSS_SELECTOR, ".text-xl.font-semibold").text
+            add_buttons[0].click()
+            
+            try:
+                WebDriverWait(self.selenium, 10).until(
+                    lambda driver: "cart" in driver.current_url.lower() or 
+                    EC.presence_of_element_located((By.CSS_SELECTOR, ".cart-item, [class*='cart'], [id*='cart']"))
+                )
+            except:
+                WebDriverWait(self.selenium, 10).until(
+                    EC.presence_of_element_located((By.CSS_SELECTOR, ".alert-success, .message-success"))
+                )
             page_text = self.selenium.find_element(By.TAG_NAME, "body").text
-            self.assertIn(self.product1.name, page_text)
+            self.assertIn(product_name, page_text)
             
         except Exception as e:
-            self.debug_page("test_add_to_cart_failed")
+            self.debug_page("test_add_to_cart_from_product_list_failed")
             raise
+
+    def test_add_to_cart_from_product_detail(self):
+        """Test adding a product to cart from the product detail page"""
+        try:
+            self.selenium.get(self.live_server_url + reverse('product_list'))
+            product_link = WebDriverWait(self.selenium, 10).until(
+                EC.presence_of_element_located((By.CSS_SELECTOR, ".text-xl.font-semibold a"))
+            )
+            product_name = product_link.text
+            product_link.click()
+            
+            WebDriverWait(self.selenium, 10).until(
+                EC.presence_of_element_located((By.CSS_SELECTOR, "button[type='submit']"))
+            )
+            
+            add_button = self.selenium.find_element(By.CSS_SELECTOR, "button[type='submit']")
+            self.assertIn("Add to Cart", add_button.text)
+            add_button.click()
+
+            try:
+                WebDriverWait(self.selenium, 10).until(
+                    lambda driver: "cart" in driver.current_url.lower() or 
+                    EC.presence_of_element_located((By.CSS_SELECTOR, ".cart-item, [class*='cart'], [id*='cart']"))
+                )
+            except:
+                WebDriverWait(self.selenium, 10).until(
+                    EC.presence_of_element_located((By.CSS_SELECTOR, ".alert-success, .message-success"))
+                )
+
+            page_text = self.selenium.find_element(By.TAG_NAME, "body").text
+            self.assertIn(product_name, page_text)
+            
+        except Exception as e:
+            self.debug_page("test_add_to_cart_from_product_detail_failed")
+            raise
+
 
     def test_quantity_adjustment(self):
         """Test the quantity increment and decrement """
