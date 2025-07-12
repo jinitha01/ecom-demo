@@ -66,15 +66,6 @@ jobs:
         echo $! > server.pid
         sleep 5  # Give server time to start
         cat server.log
-      
-    - name: Wait for Django server to be ready
-      run: |
-        for i in $(seq 1 10); do
-          curl -f http://localhost:8000/ && break
-          echo "Waiting for Django server... ($i/10)"
-          sleep 5
-        done
-      working-directory: ./
 
     - name: Run E2E tests
       run: |
