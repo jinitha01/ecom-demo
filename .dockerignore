@@ -1,0 +1,41 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+.venv/
+env/
+.env/
+
+# Editor-specific files
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Database
+*.sqlite3
+migrations/
+
+# Media files (user-uploaded content)
+media/
+
+# Static files (collected during deployment)
+static/
+
+# Sensitive information
+local_settings.py
+.env
+
+# Logs
+*.log
+
+# Test and coverage
+.coverage
+htmlcov/
+.pytest_cache/
+test_debug/
+
+# Other temporary files
+tmp/
