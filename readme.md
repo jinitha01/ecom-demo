@@ -115,6 +115,48 @@ Follow these steps to get your development environment up and running:
 
 ---
 
+## 🧪 Testing
+
+This project includes robust automated testing using Pytest for unit/integration tests and Selenium for end-to-end (E2E) tests.
+
+### Unit/Integration Tests with Pytest
+
+Unit and integration tests are written using `pytest` and `pytest-django` to ensure individual components and their interactions work as expected.
+
+* **Test Files**: Unit tests for the `products` app are located in `products/tests.py`.
+* **Running Tests**:
+    To run all unit and integration tests, ensure your virtual environment is activated and execute:
+    ```bash
+    pytest products/tests.py
+    ```
+    Or, to run all tests in the project (including E2E tests if configured in `pytest.ini`):
+    ```bash
+    pytest
+    ```
+
+### End-to-End (E2E) Tests with Selenium
+
+End-to-end tests simulate user interactions with the web application using Selenium WebDriver, ensuring the entire application flow functions correctly from a user's perspective.
+
+* **Test Files**: E2E tests are located in `ecom_demo/e2e_tests/test_ecom.py`.
+* **Prerequisites**:
+    * Ensure you have Google Chrome installed on your system.
+    * `webdriver-manager` (included in `requirements.txt`) will automatically download the correct ChromeDriver for your Chrome browser version.
+* **Running Tests**:
+    Before running E2E tests, you need to have the Django development server running.
+    1.  **Start the Django server:**
+        ```bash
+        python manage.py runserver 0.0.0.0:8000
+        ```
+    2.  **In a new terminal, navigate to the project root (`ecom-demo/`) and run the E2E tests:**
+        ```bash
+        cd ecom_demo # Navigate into the inner ecom_demo directory where e2e_tests is located
+        pytest e2e_tests/ -v
+        ```
+        The `-v` flag provides verbose output, showing details of each test run.
+
+---
+
 ## Screenshots
 
 ![Homepage with product listings](https://github.com/jinitha01/ecom-demo/raw/readme/screenshots/1.png)
